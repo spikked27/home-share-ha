@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 320"><g transform="translate(0 8) scale(.59375)"><rect x="16" y="16" width="480" height="480" rx="120" fill="#23846a"/>
+<path d="M116 246L256 126L396 246M148 222V374H234" fill="none" stroke="#f6fcf8" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M250 286L352 240M250 286L352 350" fill="none" stroke="#a3efd2" stroke-width="24" stroke-linecap="round"/>
+<circle cx="250" cy="286" r="30" fill="#f6fcf8"/>
+<circle cx="352" cy="240" r="30" fill="#a3efd2"/>
+<circle cx="352" cy="350" r="30" fill="#a3efd2"/></g><text x="348" y="211" fill="#e9f5ee" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="132" font-weight="600" letter-spacing="-4">Home Share</text></svg>

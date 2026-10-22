@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="custom_components/home_share/brand/dark_logo@2x.png">
+  <img src="custom_components/home_share/brand/logo@2x.png" alt="Home Share" width="480">
+</picture>
+
 # Home Share
 
 A calmer way to manage what Google Home can see in Home Assistant.
@@ -75,3 +80,7 @@ python scripts/package.py
 Pure model/storage tests need PyYAML only. Native runtime integration tests need a supported Linux Home Assistant environment and Python 3.14. The frontend uses native custom elements, local assets and Home Assistant's WebSocket connection; no build tools or CDN are needed.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). MIT licensed.
+
+Original SVG artwork and light/dark PNG logos are included in `custom_components/home_share/brand/`. Regenerate the exports with `python scripts/generate_brand.py` (development dependency: Pillow). Release packaging checks that every required platform image is present.
+
+Home Assistant uses the bundled `brand/` images. Legacy HACS 2.0.5 ignores these images and still uses its obsolete CDN. In **Settings → Devices & services → Home Share → Configure**, an optional compatibility switch redirects only Home Share's icon/logo URL to its bundled artwork. It recognizes only the known 20250128065759 HACS frontend, backs up original JavaScript and gzip files under `/config/backups/home_share/hacs_branding/`, and restores matching patched files when disabled or Home Share is removed. It never replaces assets changed by another tool. Other HACS versions and Marketplace are left untouched. Reload the HACS browser page after changing the option.
