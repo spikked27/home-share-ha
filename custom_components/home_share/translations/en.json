@@ -1,0 +1,8 @@
+{
+  "title": "Home Share",
+  "config": {
+    "step": {"user": {"title": "A simpler way to share your home", "description": "Manage your existing manual Google Assistant connection. Your shared devices, names, rooms and aliases are imported exactly as they are. Changes apply live, with a backup before every save. No subscription or new credentials required.\n\n{error}"}},
+    "error": {"setup_failed": "Could not connect. See the explanation above."},
+    "abort": {"already_configured": "Home Share is already configured."}
+  }
+}
