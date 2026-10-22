@@ -71,6 +71,20 @@ class LiveTests(unittest.IsolatedAsyncioTestCase):
             await self.manager.apply("stale", {"light.example": {"expose": False}}, False)
         self.assertEqual(read(self.path), self.config)
 
+    async def test_restore_updates_disk_and_native_runtime(self):
+        result = await self.manager.apply(revision(self.config), {"light.example": {"name": "Changed"}}, False)
+        current = self.manager.live().current()
+        await self.manager.apply(revision(current), {}, False, backup=result["backup"])
+        self.assertEqual(self.google.entity_config, self.config)
+        self.assertEqual(read(self.path), self.config)
+
+    async def test_websocket_schema_keeps_validated_actions(self):
+        message = websocket_manage._ws_schema({"id": 1, "type": "home_share/manage", "action": "apply", "revision": "x"})
+        self.assertEqual(message["changes"], {})
+        self.assertTrue(message["sync"])
+        with self.assertRaises(Exception):
+            websocket_manage._ws_schema({"id": 1, "type": "home_share/manage", "action": "execute"})
+
     async def test_runtime_failure_rolls_back_yaml(self):
         with patch.object(LiveConfig, "replace", side_effect=RuntimeError("synthetic failure")) as replacement:
             with self.assertRaisesRegex(RuntimeError, "synthetic failure"):
