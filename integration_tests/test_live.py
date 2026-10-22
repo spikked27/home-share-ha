@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.components.google_assistant.http import GoogleConfig
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import entity_registry as er, device_registry as dr, area_registry as ar
 
 from custom_components.home_share import Manager, websocket_manage
 from custom_components.home_share.config_flow import included_file
@@ -31,7 +31,9 @@ class LiveTests(unittest.IsolatedAsyncioTestCase):
         self.hass.config_entries = MagicMock()
         self.hass.config_entries.async_entries.return_value = [self.entry]
         self.hass.data["google_assistant"] = {"config": deepcopy(self.google._config)}
-        er.async_get(self.hass)
+        await dr.async_load(self.hass)
+        await ar.async_load(self.hass)
+        await er.async_load(self.hass)
         self.path = pathlib.Path(self.tmp.name) / "entities.yaml"
         import yaml
         self.path.write_text(yaml.safe_dump(self.config))
@@ -51,15 +53,29 @@ class LiveTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.google.entity_config["switch.missing"], self.config["switch.missing"])
         self.assertEqual(self.google._config["service_account"]["private_key"], "SYNTHETIC_ONLY")
 
+    async def test_google_sync_serialization_reads_live_names_rooms_and_aliases(self):
+        from homeassistant.components.google_assistant.helpers import GoogleEntity
+        from homeassistant.core import State
+        state = State("light.example", "on", {"friendly_name": "Example", "supported_color_modes": ["onoff"]})
+        entity = GoogleEntity(self.hass, self.google, state)
+        self.assertEqual(entity.sync_serialize("synthetic", "synthetic")["name"]["name"], "Original")
+        await self.manager.apply(revision(self.config), {"light.example": {
+            "name": "Reading lamp", "room": "Library", "aliases": ["Book light"]}}, sync=False)
+        payload = entity.sync_serialize("synthetic", "synthetic")
+        self.assertEqual(payload["name"]["name"], "Reading lamp")
+        self.assertEqual(payload["name"]["nicknames"], ["Reading lamp", "Book light"])
+        self.assertEqual(payload["roomHint"], "Library")
+
     async def test_stale_revision_cannot_write(self):
         with self.assertRaisesRegex(ValueError, "another window"):
             await self.manager.apply("stale", {"light.example": {"expose": False}}, False)
         self.assertEqual(read(self.path), self.config)
 
     async def test_runtime_failure_rolls_back_yaml(self):
-        with patch.object(LiveConfig, "replace", side_effect=RuntimeError("synthetic failure")):
-            with self.assertRaises(RuntimeError):
+        with patch.object(LiveConfig, "replace", side_effect=RuntimeError("synthetic failure")) as replacement:
+            with self.assertRaisesRegex(RuntimeError, "synthetic failure"):
                 await self.manager.apply(revision(self.config), {"light.example": {"expose": False}}, False)
+            replacement.assert_called_once()
         self.assertEqual(read(self.path), self.config)
         self.assertEqual(self.google.entity_config, self.config)
 
