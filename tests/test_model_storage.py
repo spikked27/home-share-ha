@@ -54,6 +54,11 @@ class ModelTests(unittest.TestCase):
         self.assertIs(type(result["light.example"]), dict)
         self.assertIs(type(result["light.example"]["name"]), str)
 
+    def test_bulk_selection_over_a_thousand_matches_supported_inventory(self):
+        changes = {f"light.example_{i}": {"expose": True} for i in range(1250)}
+        self.assertEqual(len(patched({}, changes)), 1250)
+        self.assertEqual(patched({}, changes)["light.example_1249"], {"expose": True})
+
 
 class StorageTests(unittest.TestCase):
     def setUp(self):

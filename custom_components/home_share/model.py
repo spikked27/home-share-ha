@@ -41,8 +41,8 @@ def revision(config):
 def patched(config, changes):
     """Patch only requested fields; retain missing/disabled entities and extra settings."""
     result = validate(config)
-    if not isinstance(changes, dict) or len(changes) > 1000:
-        raise ValueError("Select at most 1,000 entities at a time.")
+    if not isinstance(changes, dict) or len(changes) > 10000:
+        raise ValueError("Select at most 10,000 entities at a time.")
     for entity_id, fields in changes.items():
         if not isinstance(fields, dict) or not fields or set(fields) - FIELDS:
             raise ValueError("Unsupported change.")
