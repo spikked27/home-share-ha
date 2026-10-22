@@ -12,6 +12,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import area_registry as ar, device_registry as dr, entity_registry as er
 
 from .config_flow import included_file
+from .hacs_branding import configure as configure_hacs_branding
 from .model import difference, patched, revision
 from .runtime import LiveConfig
 from .storage import atomic_write, history, managed_file, read, restore_data, save
@@ -160,15 +161,30 @@ async def async_setup_entry(hass, entry):
     state = hass.data.setdefault(DOMAIN, {})
     if not state.get("registered"):
         await hass.http.async_register_static_paths([StaticPathConfig(
-            "/home_share_static", str(Path(__file__).parent / "frontend"), False)])
+            "/home_share_static", str(Path(__file__).parent / "frontend"), False), StaticPathConfig(
+            "/home_share_brand", str(Path(__file__).parent / "brand"), False)])
         websocket_api.async_register_command(hass, websocket_manage)
         state["registered"] = True
     state["manager"] = manager
+    try:
+        state["hacs_branding"] = await hass.async_add_executor_job(
+            configure_hacs_branding, hass.config.config_dir, entry.options.get("legacy_hacs_branding", False))
+    except (ValueError, OSError):
+        _LOGGER.warning("Legacy HACS logo compatibility could not be applied; sharing remains available")
+    entry.async_on_unload(entry.add_update_listener(async_options_updated))
     await panel_custom.async_register_panel(hass, webcomponent_name="home-share-panel",
-        frontend_url_path="home-share", module_url="/home_share_static/home-share.js?v=0.1.2",
+        frontend_url_path="home-share", module_url="/home_share_static/home-share.js?v=0.1.3",
         sidebar_title="Home Share", sidebar_icon="mdi:home-export-outline", require_admin=True,
         config={})
     return True
+
+
+async def async_options_updated(hass, entry):
+    await hass.config_entries.async_reload(entry.entry_id)
+
+
+async def async_remove_entry(hass, entry):
+    await hass.async_add_executor_job(configure_hacs_branding, hass.config.config_dir, False)
 
 
 async def async_unload_entry(hass, entry):

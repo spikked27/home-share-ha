@@ -1,5 +1,6 @@
 {
   "title": "Home Share",
+  "options": {"step":{"init":{"title":"Logo compatibility","description":"HACS 2.0.5 uses an obsolete icon CDN. This optional fix changes only Home Share's image URL in its known legacy frontend, including compressed assets. Originals are backed up. Disable this option to restore them. Other HACS versions and Marketplace are left untouched.","data":{"legacy_hacs_branding":"Show the Home Share logo in legacy HACS 2.0.5"}}}},
   "config": {
     "step": {"user": {"title": "A simpler way to share your home", "description": "Manage your existing manual Google Assistant connection. Your shared devices, names, rooms and aliases are imported exactly as they are. Changes apply live, with a backup before every save. No subscription or new credentials required.\n\n{error}"}},
     "error": {"setup_failed": "Could not connect. See the explanation above."},

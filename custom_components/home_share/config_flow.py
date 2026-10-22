@@ -5,6 +5,7 @@ import yaml
 
 import probatio as vol
 from homeassistant import config_entries
+from homeassistant.core import callback
 
 from .runtime import LiveConfig
 from .storage import managed_file, read
@@ -30,6 +31,11 @@ def included_file(config_dir):
 class HomeShareConfigFlow(config_entries.ConfigFlow, domain="home_share"):
     VERSION = 1
 
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        return HomeShareOptionsFlow()
+
     async def async_step_user(self, user_input=None):
         await self.async_set_unique_id("home_share")
         self._abort_if_unique_id_configured()
@@ -48,3 +54,12 @@ class HomeShareConfigFlow(config_entries.ConfigFlow, domain="home_share"):
             return self.async_create_entry(title="Home Share", data={"filename": filename})
         return self.async_show_form(step_id="user", data_schema=vol.Schema({}), errors=errors,
                                     description_placeholders={"error": ""})
+
+
+class HomeShareOptionsFlow(config_entries.OptionsFlow):
+    async def async_step_init(self, user_input=None):
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+        return self.async_show_form(step_id="init", data_schema=vol.Schema({
+            vol.Optional("legacy_hacs_branding", default=self.config_entry.options.get("legacy_hacs_branding", False)): bool
+        }))

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.3
+
+- Add an original Home Share logo and icon, SVG source artwork, and light/dark PNG exports at standard and doubled resolutions.
+- Bundle Home Assistant integration branding in every HACS release and display the same logo in the sidebar panel and repository README.
+- Fail packaging if required brand assets are missing.
+- Add an optional, backed-up and reversible Home Share logo fix for the known legacy HACS 2.0.5 frontend. Other repository icons remain unchanged.
+
 ## 0.1.2
 
 - Normalize Home Assistant's annotated YAML types before persistence, preserving exact entity values while allowing safe serialization.
