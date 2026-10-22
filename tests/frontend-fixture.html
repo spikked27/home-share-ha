@@ -1,0 +1,10 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Home Share synthetic test fixture</title><style>body{margin:0;background:#f5f7f4;--primary-background-color:#f5f7f4;--card-background-color:#fff;--primary-text-color:#20322e;--secondary-text-color:#74817b;--divider-color:#e3e9e3}</style>
+<script type="module">
+import '../custom_components/home_share/frontend/home-share.js';
+const items=[['light.reading_lamp','Reading lamp','Living room','light'],['climate.upstairs','Upstairs thermostat','Upstairs','climate'],['switch.coffee','Coffee machine','Kitchen','switch'],['light.pendants','Kitchen pendants','Kitchen','light'],['sensor.weather','Garden temperature','Garden','sensor'],['switch.legacy','Window lights','Living room','switch']].map(([entity_id,name,area,domain],i)=>({entity_id,name,area,domain,google_name:'',room:area,aliases:[],shared:i!==2,available:i!==5,disabled:i===5,configured:true,state:i===5?null:'on'}));
+const config=Object.fromEntries(items.map(x=>[x.entity_id,{expose:x.shared,room:x.room}]));
+window.fixture={revision:'synthetic',items,config,stats:{shared:5,total:6,unavailable:1},live:true,last_sync:null};
+window.calls=[];
+const panel=document.createElement('home-share-panel');document.body.append(panel);
+panel.hass={connection:{subscribeEvents:async()=>()=>{}},callWS:async msg=>{window.calls.push(msg);if(msg.action==='list')return structuredClone(window.fixture);if(msg.action==='preview')return {changes:Object.entries(msg.changes).map(([entity_id,c])=>({entity_id,before:config[entity_id]||{},after:{...config[entity_id],...c}}))};if(msg.action==='history')return [];if(msg.action==='sync')return {ok:true,message:'Google accepted the sync request.'};if(msg.action==='apply'){for(const[id,c]of Object.entries(msg.changes)){Object.assign(config[id],c);const x=items.find(x=>x.entity_id===id);if('expose'in c)x.shared=c.expose;if('name'in c)x.google_name=c.name;}return {applied:true,restart_required:false,sync:{ok:true}};}}};
+</script>

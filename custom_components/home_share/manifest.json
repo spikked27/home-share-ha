@@ -1,0 +1,13 @@
+{
+  "domain": "home_share",
+  "name": "Home Share",
+  "codeowners": ["@spikked27"],
+  "config_flow": true,
+  "dependencies": ["google_assistant", "frontend", "http"],
+  "documentation": "https://github.com/spikked27/home-share-ha",
+  "integration_type": "service",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/spikked27/home-share-ha/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

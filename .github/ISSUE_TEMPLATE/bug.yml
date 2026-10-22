@@ -1,0 +1,16 @@
+name: Bug report
+description: Report a reproducible problem without sharing private household data.
+body:
+  - type: input
+    id: versions
+    attributes:
+      label: Home Assistant and Home Share versions
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Include steps and expected behavior. Remove tokens, keys, household names, addresses and entity IDs from screenshots and logs.
+    validations:
+      required: true
