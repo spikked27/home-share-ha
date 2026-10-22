@@ -165,7 +165,7 @@ async def async_setup_entry(hass, entry):
         state["registered"] = True
     state["manager"] = manager
     await panel_custom.async_register_panel(hass, webcomponent_name="home-share-panel",
-        frontend_url_path="home-share", module_url="/home_share_static/home-share.js?v=0.1.0",
+        frontend_url_path="home-share", module_url="/home_share_static/home-share.js?v=0.1.1",
         sidebar_title="Home Share", sidebar_icon="mdi:home-export-outline", require_admin=True,
         config={})
     return True

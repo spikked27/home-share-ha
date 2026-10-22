@@ -1,6 +1,7 @@
 """Connect an existing, manual Google Assistant setup without credentials."""
 from pathlib import Path
-import re
+
+import yaml
 
 import probatio as vol
 from homeassistant import config_entries
@@ -11,13 +12,19 @@ from .storage import managed_file, read
 
 def included_file(config_dir):
     text = (Path(config_dir) / "configuration.yaml").read_text(encoding="utf-8")
-    section = re.search(r"(?m)^google_assistant:\s*\n((?:[ \t]+[^\n]*\n|\s*\n)*)", text + "\n")
-    if not section:
+    # Compose syntax nodes only: preserve HA tags without loading included
+    # credentials or constructing arbitrary YAML objects. Comments and quoted
+    # filenames are valid YAML and must not disrupt include detection.
+    root = yaml.compose(text, Loader=yaml.SafeLoader)
+    sections = [value for key, value in root.value if key.value == "google_assistant"] if isinstance(root, yaml.MappingNode) else []
+    if len(sections) != 1 or not isinstance(sections[0], yaml.MappingNode):
         raise ValueError("Manual Google Assistant must be configured in configuration.yaml.")
-    match = re.search(r"(?m)^  entity_config:\s*!include\s+([A-Za-z0-9_-]+\.ya?ml)\s*(?:#.*)?$", section[1])
-    if not match:
+    includes = [value for key, value in sections[0].value if key.value == "entity_config"]
+    if len(includes) != 1 or not isinstance(includes[0], yaml.ScalarNode) or includes[0].tag != "!include":
         raise ValueError("Use entity_config: !include google_assistant_entities.yaml in manual Google Assistant.")
-    return match[1]
+    filename = includes[0].value
+    managed_file(config_dir, filename)
+    return filename
 
 
 class HomeShareConfigFlow(config_entries.ConfigFlow, domain="home_share"):

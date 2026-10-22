@@ -128,6 +128,11 @@ class LiveTests(unittest.IsolatedAsyncioTestCase):
         path.write_text("google_assistant:\n  expose_by_default: false\n  entity_config: !include entities.yaml\nother:\n  test: true\n")
         self.assertEqual(included_file(self.tmp.name), "entities.yaml")
 
+    async def test_configuration_comments_and_ha_tags_do_not_load_secrets(self):
+        path = pathlib.Path(self.tmp.name) / "configuration.yaml"
+        path.write_text("google_assistant:\n  project_id: !secret project\n  service_account: !include never_read_this.json\n  expose_by_default: false\n# An unindented YAML comment is legal here.\n#  exposed_domains:\n  entity_config: !include 'entities.yaml'\nother:\n  option: !secret other\n")
+        self.assertEqual(included_file(self.tmp.name), "entities.yaml")
+
 
 if __name__ == "__main__":
     unittest.main()

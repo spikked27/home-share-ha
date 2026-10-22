@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- Detect the managed entities include through YAML syntax nodes, including configurations with unindented comments, quoted filenames and Home Assistant tags. Never open referenced credential files during detection.
+
 ## 0.1.0
 
 - Initial release with a responsive Home Assistant sidebar panel.
