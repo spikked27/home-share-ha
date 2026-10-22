@@ -38,6 +38,10 @@ class LiveTests(unittest.IsolatedAsyncioTestCase):
         self.path = pathlib.Path(self.tmp.name) / "entities.yaml"
         import yaml
         self.path.write_text(yaml.safe_dump(self.config))
+        from homeassistant.util.yaml import load_yaml
+        loaded = await self.hass.async_add_executor_job(load_yaml, str(self.path))
+        self.google._config["entity_config"] = loaded
+        self.hass.data["google_assistant"]["config"]["entity_config"] = deepcopy(loaded)
         self.manager = Manager(self.hass, self.path)
 
     async def asyncTearDown(self):

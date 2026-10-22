@@ -26,9 +26,12 @@ def validate(config):
                     or any(not isinstance(v, str) or not v.strip() or len(v) > 255 for v in value)):
                 raise ValueError("Use up to 20 nonempty aliases, each up to 255 characters.")
     # Also rejects exotic YAML objects and excessive payloads.
-    if len(json.dumps(config, allow_nan=False).encode()) > 2_000_000:
+    serialized = json.dumps(config, allow_nan=False)
+    if len(serialized.encode()) > 2_000_000:
         raise ValueError("Configuration is too large.")
-    return deepcopy(config)
+    # HA's YAML loader returns annotated dict/list/string subclasses. Preserve
+    # their values, not source annotations that PyYAML cannot serialize safely.
+    return json.loads(serialized)
 
 
 def revision(config):
@@ -38,8 +41,8 @@ def revision(config):
 def patched(config, changes):
     """Patch only requested fields; retain missing/disabled entities and extra settings."""
     result = validate(config)
-    if not isinstance(changes, dict) or len(changes) > 1000:
-        raise ValueError("Select at most 1,000 entities at a time.")
+    if not isinstance(changes, dict) or len(changes) > 10000:
+        raise ValueError("Select at most 10,000 entities at a time.")
     for entity_id, fields in changes.items():
         if not isinstance(fields, dict) or not fields or set(fields) - FIELDS:
             raise ValueError("Unsupported change.")

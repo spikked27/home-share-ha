@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2
+
+- Normalize Home Assistant's annotated YAML types before persistence, preserving exact entity values while allowing safe serialization.
+- Exercise live apply, Google serialization and recovery using the native HA YAML loader in regression tests.
+
 ## 0.1.1
 
 - Detect the managed entities include through YAML syntax nodes, including configurations with unindented comments, quoted filenames and Home Assistant tags. Never open referenced credential files during detection.
