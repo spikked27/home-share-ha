@@ -41,6 +41,19 @@ class ModelTests(unittest.TestCase):
     def test_hash_ignores_key_order(self):
         self.assertEqual(revision(self.config), revision(dict(reversed(list(self.config.items())))))
 
+    def test_yaml_subclasses_are_normalized_without_value_changes(self):
+        class AnnotatedDict(dict):
+            pass
+        class AnnotatedString(str):
+            pass
+        config = AnnotatedDict({AnnotatedString("light.example"): AnnotatedDict({
+            "name": AnnotatedString("Reading lamp"), "expose": True})})
+        result = validate(config)
+        self.assertEqual(result, config)
+        self.assertIs(type(result), dict)
+        self.assertIs(type(result["light.example"]), dict)
+        self.assertIs(type(result["light.example"]["name"]), str)
+
 
 class StorageTests(unittest.TestCase):
     def setUp(self):

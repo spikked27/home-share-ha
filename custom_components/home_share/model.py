@@ -26,9 +26,12 @@ def validate(config):
                     or any(not isinstance(v, str) or not v.strip() or len(v) > 255 for v in value)):
                 raise ValueError("Use up to 20 nonempty aliases, each up to 255 characters.")
     # Also rejects exotic YAML objects and excessive payloads.
-    if len(json.dumps(config, allow_nan=False).encode()) > 2_000_000:
+    serialized = json.dumps(config, allow_nan=False)
+    if len(serialized.encode()) > 2_000_000:
         raise ValueError("Configuration is too large.")
-    return deepcopy(config)
+    # HA's YAML loader returns annotated dict/list/string subclasses. Preserve
+    # their values, not source annotations that PyYAML cannot serialize safely.
+    return json.loads(serialized)
 
 
 def revision(config):
