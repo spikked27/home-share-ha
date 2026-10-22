@@ -31,9 +31,10 @@ class LiveTests(unittest.IsolatedAsyncioTestCase):
         self.hass.config_entries = MagicMock()
         self.hass.config_entries.async_entries.return_value = [self.entry]
         self.hass.data["google_assistant"] = {"config": deepcopy(self.google._config)}
-        await dr.async_load(self.hass)
-        await ar.async_load(self.hass)
-        await er.async_load(self.hass)
+        dr.async_setup(self.hass)
+        await dr.async_load(self.hass, load_empty=True)
+        await ar.async_load(self.hass, load_empty=True)
+        await er.async_load(self.hass, load_empty=True)
         self.path = pathlib.Path(self.tmp.name) / "entities.yaml"
         import yaml
         self.path.write_text(yaml.safe_dump(self.config))
