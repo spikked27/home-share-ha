@@ -25,7 +25,7 @@ Search your devices, share them in bulk, and set familiar names, rooms and alias
 
 ## Requirements
 
-Home Assistant **2026.10.0 or newer**; tested with **2026.10.2**. A working manual `google_assistant` integration is required. Home Share does not create a Google Cloud project or replace Google account linking.
+Home Assistant **2026.10.0 or newer**; tested with **2026.10.2 and 2026.11.0**. A working manual `google_assistant` integration is required. Home Share does not create a Google Cloud project or replace Google account linking.
 
 The Google configuration must explicitly share selected entities:
 

@@ -6,4 +6,4 @@ Home Share uses Home Assistant's authenticated WebSocket connection and addition
 
 Entity settings and recovery files contain household metadata and are private. They belong in `/config`, not in this repository. The release packager includes integration source files only.
 
-Version 0.1.x is supported. The live configuration adapter depends on a guarded private Home Assistant interface and is tested against 2026.10.2. A successful test on one version does not guarantee compatibility with future versions.
+Version 0.1.x is supported. The live configuration adapter depends on a guarded private Home Assistant interface and is tested against 2026.10.2 and 2026.11.0. A successful test on one version does not guarantee compatibility with future versions.

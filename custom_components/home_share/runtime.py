@@ -16,7 +16,12 @@ class LiveConfig:
         if len(entries) != 1:
             raise ValueError("A running manual Google Assistant integration is required.")
         self.google = entries[0].runtime_data
-        self.yaml = hass.data.get(DOMAIN, {}).get(DATA_CONFIG)
+        # Core 2026.11 replaced the nested string key with a top-level HassKey.
+        # Use the native key so edits also survive a Google entry reload.
+        if DATA_CONFIG == "config":  # Core 2026.10 and earlier
+            self.yaml = hass.data.get(DOMAIN, {}).get(DATA_CONFIG)
+        else:
+            self.yaml = hass.data.get(DATA_CONFIG)
         if (not isinstance(getattr(self.google, "_config", None), dict)
                 or not isinstance(self.yaml, dict)
                 or not isinstance(getattr(self.google, "is_supported_cache", None), dict)

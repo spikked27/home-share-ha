@@ -173,7 +173,7 @@ async def async_setup_entry(hass, entry):
         _LOGGER.warning("Legacy HACS logo compatibility could not be applied; sharing remains available")
     entry.async_on_unload(entry.add_update_listener(async_options_updated))
     await panel_custom.async_register_panel(hass, webcomponent_name="home-share-panel",
-        frontend_url_path="home-share", module_url="/home_share_static/home-share.js?v=0.1.3",
+        frontend_url_path="home-share", module_url="/home_share_static/home-share.js?v=0.1.4",
         sidebar_title="Home Share", sidebar_icon="mdi:home-export-outline", require_admin=True,
         config={})
     return True

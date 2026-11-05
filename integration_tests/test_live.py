@@ -8,6 +8,8 @@ import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from homeassistant.core import HomeAssistant
+from homeassistant.components import google_assistant
+from homeassistant.components.google_assistant.const import DATA_CONFIG, DOMAIN
 from homeassistant.components.google_assistant.http import GoogleConfig
 from homeassistant.helpers import entity_registry as er, device_registry as dr, area_registry as ar
 
@@ -24,13 +26,20 @@ class LiveTests(unittest.IsolatedAsyncioTestCase):
         self.hass = HomeAssistant(self.tmp.name)
         self.config = {"light.example": {"expose": True, "name": "Original", "room": "Study"},
                        "switch.missing": {"expose": True, "name": "Retained"}}
-        self.google = GoogleConfig(self.hass, {"entity_config": deepcopy(self.config), "expose_by_default": False,
+        self.google = GoogleConfig(self.hass, {"project_id": "synthetic-project", "entity_config": deepcopy(self.config), "expose_by_default": False,
             "exposed_domains": ["light", "switch"], "service_account": {"private_key": "SYNTHETIC_ONLY"}})
         self.google._store = SimpleNamespace(agent_user_ids={"synthetic": {}})
         self.entry = SimpleNamespace(source="import", runtime_data=self.google)
         self.hass.config_entries = MagicMock()
+        self.hass.config_entries.async_wait_initialized = AsyncMock()
         self.hass.config_entries.async_entries.return_value = [self.entry]
-        self.hass.data["google_assistant"] = {"config": deepcopy(self.google._config)}
+        # Let the installed Core version choose its actual YAML storage layout.
+        # A hand-built legacy layout would hide upstream compatibility changes.
+        self.yaml_config = deepcopy(self.google._config)
+        self.hass.config_entries.flow.async_init = AsyncMock(return_value={})
+        with patch.object(google_assistant, "async_setup_services"):
+            await google_assistant.async_setup(self.hass, {DOMAIN: self.yaml_config})
+        await self.hass.async_block_till_done()
         dr.async_setup(self.hass)
         await dr.async_load(self.hass, load_empty=True)
         await ar.async_load(self.hass, load_empty=True)
@@ -41,7 +50,7 @@ class LiveTests(unittest.IsolatedAsyncioTestCase):
         from homeassistant.util.yaml import load_yaml
         loaded = await self.hass.async_add_executor_job(load_yaml, str(self.path))
         self.google._config["entity_config"] = loaded
-        self.hass.data["google_assistant"]["config"]["entity_config"] = deepcopy(loaded)
+        self.yaml_config["entity_config"] = deepcopy(loaded)
         self.manager = Manager(self.hass, self.path)
 
     async def asyncTearDown(self):
@@ -55,6 +64,7 @@ class LiveTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(self.google.should_expose("light.example"))
         self.assertEqual(self.google.entity_config["light.example"]["name"], "New")
         self.assertEqual(self.google.entity_config, read(self.path))
+        self.assertEqual(self.yaml_config["entity_config"], read(self.path))
         self.assertEqual(self.google.entity_config["switch.missing"], self.config["switch.missing"])
         self.assertEqual(self.google._config["service_account"]["private_key"], "SYNTHETIC_ONLY")
 
@@ -100,8 +110,19 @@ class LiveTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_reload_uses_new_runtime(self):
         original = self.manager.live().google
-        self.entry.runtime_data = GoogleConfig(self.hass, deepcopy(original._config))
+        await self.manager.apply(revision(self.config), {"light.example": {"name": "After reload"}}, False)
+        self.entry.runtime_data = GoogleConfig(self.hass, deepcopy(self.yaml_config))
         self.assertIsNot(self.manager.live().google, original)
+        self.assertEqual(self.manager.live().current()["light.example"]["name"], "After reload")
+
+    async def test_adapter_uses_native_setup_yaml_reference(self):
+        self.assertIs(self.manager.live().yaml, self.yaml_config)
+
+    async def test_missing_native_yaml_fails_closed(self):
+        self.hass.data.pop(DATA_CONFIG, None)
+        self.hass.data.pop(DOMAIN, None)
+        with self.assertRaisesRegex(ValueError, "live configuration interface"):
+            LiveConfig(self.hass)
 
     async def test_snapshot_retains_missing_entities_without_secrets(self):
         result = await self.manager.snapshot()
