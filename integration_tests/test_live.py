@@ -26,7 +26,7 @@ class LiveTests(unittest.IsolatedAsyncioTestCase):
         self.hass = HomeAssistant(self.tmp.name)
         self.config = {"light.example": {"expose": True, "name": "Original", "room": "Study"},
                        "switch.missing": {"expose": True, "name": "Retained"}}
-        self.google = GoogleConfig(self.hass, {"entity_config": deepcopy(self.config), "expose_by_default": False,
+        self.google = GoogleConfig(self.hass, {"project_id": "synthetic-project", "entity_config": deepcopy(self.config), "expose_by_default": False,
             "exposed_domains": ["light", "switch"], "service_account": {"private_key": "SYNTHETIC_ONLY"}})
         self.google._store = SimpleNamespace(agent_user_ids={"synthetic": {}})
         self.entry = SimpleNamespace(source="import", runtime_data=self.google)
