@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.4
+
+- Fix startup on Home Assistant 2026.11 after Google Assistant moved its YAML configuration storage.
+- Preserve live sharing changes across Google Assistant entry reloads on both supported storage layouts.
+- Build compatibility fixtures through native Google Assistant setup and run regression tests against Core 2026.10.2 and 2026.11.0.
+
 ## 0.1.3
 
 - Add an original Home Share logo and icon, SVG source artwork, and light/dark PNG exports at standard and doubled resolutions.
