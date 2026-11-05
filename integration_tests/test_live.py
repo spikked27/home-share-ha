@@ -31,6 +31,7 @@ class LiveTests(unittest.IsolatedAsyncioTestCase):
         self.google._store = SimpleNamespace(agent_user_ids={"synthetic": {}})
         self.entry = SimpleNamespace(source="import", runtime_data=self.google)
         self.hass.config_entries = MagicMock()
+        self.hass.config_entries.async_wait_initialized = AsyncMock()
         self.hass.config_entries.async_entries.return_value = [self.entry]
         # Let the installed Core version choose its actual YAML storage layout.
         # A hand-built legacy layout would hide upstream compatibility changes.
